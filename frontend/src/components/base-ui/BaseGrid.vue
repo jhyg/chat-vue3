@@ -62,8 +62,8 @@ export default {
             var temp = null;
 
             if(!me.offline){
-                temp = await this.repository.find(query)
-                this.value = temp
+                // temp = await this.repository.find(query)
+                // this.value = temp
             }
 
             return this.value;

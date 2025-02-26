@@ -69,10 +69,10 @@ export default {
                 var temp = null;
                 if(!this.offline) {
                     if(this.isNew){
-                        temp = await this.repository.save(this.value, this.isNew)
-                        this.value = temp
+                        // temp = await this.repository.save(this.value, this.isNew)
+                        // this.value = temp
                     }else{
-                        temp = await this.repository.save(this.selectedRow, false)
+                        // temp = await this.repository.save(this.selectedRow, false)
                     }
                 }
                 if(this.value!=null) {
@@ -98,8 +98,8 @@ export default {
             try {
                 var temp = null
                 if (!this.offline) {
-                    temp = await this.repository.delete(selectedRow)
-                    this.value = temp
+                    // temp = await this.repository.delete(selectedRow)
+                    // this.value = temp
                 }
 
                 this.$emit('update:modelValue', this.value);

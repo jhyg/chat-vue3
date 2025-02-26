@@ -43,16 +43,16 @@ export default {
     }),
     async created() {
         var me = this;
-        this.repository = new BaseRepository(axios, this.path)
+        // this.repository = new BaseRepository(axios, this.path)
 
         if(me.value && typeof me.value == "object" && Object.values(me.value)[0]) {
 
             var id = me.value[me.idField];
-            var tmpValue = await this.repository.findById(id)
-            if(tmpValue.data) {
-                var val = tmpValue.data
-                me.referenceValue = val
-            }
+            // var tmpValue = await this.repository.findById(id)
+            // if(tmpValue.data) {
+            //     var val = tmpValue.data
+            //     me.referenceValue = val
+            // }
         }
         if(this.editMode){
             this.fillSelections()
@@ -95,7 +95,7 @@ export default {
     },
     methods: {
         async fillSelections(){
-            this.list = await this.repository.find(null);
+            // this.list = await this.repository.find(null);
         },
         select(val) {
             this.referenceValue = val;

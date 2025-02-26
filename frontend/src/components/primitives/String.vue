@@ -1,47 +1,58 @@
---<template>
+<template>
     <div>
         <div v-if="editMode">
-            <div class="label-title" style="margin-left: 5px;">{{label}}</div>
+            <div class="label-title" style="margin-left: 5px;">{{ label }}</div>
             <v-text-field 
                 v-bind="$attrs"
-                v-model="value"
-                @change="change"
-                label="입력하세요."
+                :model-value="modelValue"
+                @update:model-value="updateValue"
+                :label="label"
                 outlined
                 single-line
             />
         </div>
         <div v-else>
-            {{label}} : {{value}}
+            {{ label }} : {{ modelValue }}
         </div>
     </div>
 </template>
-<script>  
-    export default {
-        name: 'String',
-        components:{
-        },
-        props: {
-            modelValue:{
-                type: String,
-                default: null /// TODO '' is not null !
-            },
-            editMode: Boolean,
-            label: String,
-        },
-        data: () => ({
-            value: null,
-        }),
-        created(){
-            this.value = this.modelValue
-        },
-        methods:{
-            change(){
-                if(this.modelValue===null) this.value = null  //TODO '' is not null
-                this.$emit("update:modelValue", this.value);
-            }
-        }
+
+<script setup>
+import { ref, watch } from 'vue'
+
+const props = defineProps({
+    modelValue: {
+        type: String,
+        default: ''
+    },
+    editMode: {
+        type: Boolean,
+        default: false
+    },
+    label: {
+        type: String,
+        required: true
     }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const value = ref(props.modelValue)
+
+watch(() => props.modelValue, (newVal) => {
+    value.value = newVal
+})
+
+const updateValue = (newValue) => {
+    value.value = newValue
+    emit('update:modelValue', newValue)
+}
 </script>
-<style>
+
+<style scoped>
+.label-title {
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 4px;
+}
 </style>
