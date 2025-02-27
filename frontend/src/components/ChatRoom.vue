@@ -224,11 +224,15 @@ onUnmounted(() => {
                :key="message.message_id" 
                :class="['message', { 'message-own': message.user_id === userInfo.user_id }]">
             <div class="message-content">
-              <div class="message-user">{{ message.user_name }}</div>
+              <div v-if="message.user_id != userInfo.user_id" class="message-user">{{ message.user_name }}</div>
               <div class="message-text">{{ message.content }}</div>
-              <div class="message-time">
-                {{ new Date(message.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' }) }}
-              </div>
+            </div>
+            <div class="message-time">
+              {{ new Date(message.timestamp).toLocaleTimeString('ko-KR', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true 
+              }) }}
             </div>
           </div>
         </div>
@@ -293,10 +297,12 @@ onUnmounted(() => {
 .message {
   margin-bottom: 12px;
   display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .message-own {
-  justify-content: flex-end;
+  flex-direction: row-reverse;
   margin-right: 10px;
 }
 
@@ -321,8 +327,7 @@ onUnmounted(() => {
 .message-time {
   font-size: 0.7rem;
   color: #999;
-  text-align: right;
-  margin-top: 4px;
+  white-space: nowrap;
 }
 
 .message-input {
