@@ -31,12 +31,12 @@ spring:
         event-in:
           group: chat
 #<<< EDA / Topic Name
-          destination: chat
+          destination: chatvue
 #>>> EDA / Topic Name
           contentType: application/json
         event-out:
 #<<< EDA / Topic Name
-          destination: chat
+          destination: chatvue
 #>>> EDA / Topic Name
           contentType: application/json
 
@@ -75,10 +75,10 @@ spring:
       bindings:
         event-in:
           group: chat
-          destination: chat
+          destination: chatvue
           contentType: application/json
         event-out:
-          destination: chat
+          destination: chatvue
           contentType: application/json
 
 

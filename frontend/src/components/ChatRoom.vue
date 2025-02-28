@@ -1,15 +1,23 @@
 <template>
     <div>
-        <String label="RoomId" v-model="value.roomId" :editMode="editMode"/>
-        <String label="RoomPw" v-model="value.roomPw" :editMode="editMode"/>
-        <String label="RoomName" v-model="value.roomName" :editMode="editMode"/>
+        <String
+            label="RoomId"
+            v-model="value.roomId"
+            :editMode="editMode"
+        />
+        <String
+            label="RoomPw"
+            v-model="value.roomPw"
+            :editMode="editMode"
+        />
+        <String
+            label="RoomName"
+            v-model="value.roomName"
+            :editMode="editMode"
+        />
         <v-row class="ma-0 pa-0">
             <v-spacer></v-spacer>
-            <v-btn
-                width="64px"
-                color="primary"
-                @click="save"
-            >
+            <v-btn width="64px" color="primary" @click="save">
                 저장
             </v-btn>
         </v-row>
