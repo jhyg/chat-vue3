@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, inject } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, inject, nextTick } from 'vue'
 import String from './primitives/String.vue'
 
 const props = defineProps({
@@ -54,6 +54,11 @@ const state = reactive({
   }
 })
 
+// 스크롤 관련 상태
+const messageContainer = ref(null)
+const isAtBottom = ref(true)
+const newMessageNotification = ref(null)
+
 // UUID 생성 함수
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -100,7 +105,37 @@ const save = async () => {
   }
 }
 
-// 채팅 관련 함수
+// 스크롤 관련 함수
+const scrollToBottom = () => {
+  if (!messageContainer.value) return
+  // nextTick을 사용하여 DOM 업데이트 후 스크롤 실행
+  nextTick(() => {
+    messageContainer.value.scrollTop = messageContainer.value.scrollHeight
+  })
+}
+
+const checkIfAtBottom = () => {
+  if (!messageContainer.value) return
+  const { scrollTop, scrollHeight, clientHeight } = messageContainer.value
+  // 여유값을 조금 더 늘려서 스크롤 감지를 더 관대하게 설정
+  isAtBottom.value = Math.abs(scrollHeight - scrollTop - clientHeight) < 50
+}
+
+const handleScroll = () => {
+  checkIfAtBottom()
+  // 스크롤이 하단에 도달하면 알림 제거
+  if (isAtBottom.value) {
+    newMessageNotification.value = null
+  }
+}
+
+// 스크롤 버튼 클릭 핸들러 수정
+const scrollToBottomWithNotificationClear = () => {
+  scrollToBottom()
+  newMessageNotification.value = null
+}
+
+// 메시지 전송 함수 수정
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !userInfo.value) return
 
@@ -118,6 +153,10 @@ const sendMessage = async () => {
 
     if (error) throw error
     newMessage.value = ''
+    // 내가 보낸 메시지는 항상 스크롤
+    nextTick(() => {
+      scrollToBottom()
+    })
   } catch (e) {
     state.snackbar.text = '메시지 전송에 실패했습니다.'
     state.snackbar.show = true
@@ -138,6 +177,7 @@ const loadMessages = async () => {
   messages.value = data
 }
 
+// 메시지 구독 함수 수정
 const subscribeToMessages = () => {
   messageSubscription = supabase
     .channel('messages')
@@ -149,15 +189,30 @@ const subscribeToMessages = () => {
     }, (payload) => {
       if (payload.eventType === 'INSERT') {
         messages.value.push(payload.new)
+        
+        nextTick(() => {
+          // 메시지를 보낸 사람이 나인 경우 또는 스크롤이 하단에 있는 경우
+          if (payload.new.user_id === userInfo.value.user_id || isAtBottom.value) {
+            scrollToBottom()
+          } else {
+            // 다른 사람의 메시지이고 스크롤이 하단이 아닌 경우
+            newMessageNotification.value = payload.new
+          }
+        })
       }
     })
     .subscribe()
 }
 
-// 라이프사이클 훅
+// 라이프사이클 훅 수정
 onMounted(() => {
   if (props.roomId) {
-    loadMessages()
+    loadMessages().then(() => {
+      scrollToBottom()
+      if (messageContainer.value) {
+        messageContainer.value.addEventListener('scroll', handleScroll)
+      }
+    })
     subscribeToMessages()
   }
 })
@@ -166,7 +221,15 @@ onUnmounted(() => {
   if (messageSubscription) {
     messageSubscription.unsubscribe()
   }
+  if (messageContainer.value) {
+    messageContainer.value.removeEventListener('scroll', handleScroll)
+  }
 })
+
+// 텍스트 길이 제한 함수 추가
+const truncateText = (text, maxLength = 90) => {
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+}
 </script>
 
 <template>
@@ -235,6 +298,22 @@ onUnmounted(() => {
               }) }}
             </div>
           </div>
+        </div>
+
+        <!-- 새 메시지 알림 수정 -->
+        <div v-if="newMessageNotification" 
+             class="new-message-notification"
+             @click="scrollToBottomWithNotificationClear">
+          <v-card
+            class="notification-card d-flex align-center"
+            flat
+          >
+            <div class="notification-content">
+              <div class="notification-name">{{ newMessageNotification.user_name }}</div>
+              <div class="notification-text">{{ truncateText(newMessageNotification.content) }}</div>
+            </div>
+            <v-icon color="grey lighten-1">mdi-chevron-down</v-icon>
+          </v-card>
         </div>
 
         <div class="message-input">
@@ -337,5 +416,53 @@ onUnmounted(() => {
 
 .chat-form-container {
   padding: 16px;
+}
+
+.new-message-notification {
+  position: absolute;
+  bottom: 70px;
+  width: 100%;
+  cursor: pointer;
+  z-index: 1;
+  padding: 0;
+  padding-right: 60px;
+}
+
+.notification-card {
+  background-color: rgba(240, 240, 240, 0.85) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(1px);
+  margin: 0;
+}
+
+.notification-card:hover {
+  background-color: rgba(245, 245, 245, 0.9) !important;
+  transform: translateY(-1px);
+}
+
+.notification-content {
+  flex-grow: 1;
+  margin-right: 12px;
+}
+
+.notification-name {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.notification-text {
+  color: rgba(0, 0, 0, 0.75);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100vw - 80px);
+  line-height: 1.2;
 }
 </style>
