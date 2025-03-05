@@ -61,3 +61,6 @@ npm run dev
     ```
     supabase stop
     ```
+
+## PBC 적용 방법
+https://github.com/kyusooK/Cluster-distribute-rule/blob/main/README.md
