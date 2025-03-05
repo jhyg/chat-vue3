@@ -1,14 +1,16 @@
 {
-    "name": "vue-project",
+    "name": "chat-app",
     "version": "0.0.0",
     "scripts": {
         "dev": "vite --host",
         "build": "npm run build:icons && vite build",
         "preview": "vite preview --port 5050",
         "lint": "eslint . -c .eslintrc.js --fix --ext .ts,.js,.vue,.tsx,.jsx",
-        "build:icons": "node src/@iconify/build-icons.js"
+        "build:icons": "node src/@iconify/build-icons.js",
+        "start": "serve -l 8050 dist"
     },
     "dependencies": {
+        "serve": "^14.2.4",
         "@casl/ability": "^6.2.0",
         "@casl/vue": "^2.2.0",
         "@floating-ui/dom": "1.0.0",
